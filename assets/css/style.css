@@ -1,9 +1,32 @@
+#container {
+    width: 80%;
+    float: left
+}
+#domain {
+    visibility: hidden;
+}
 #info {
-    margin-left: 70%;
+   /* margin: auto;
+    width: 50%;
     border: #4e7c8e;
     border-style: double;
-    padding: 0 20px 10px 10px;
+    padding: 0 20px 10px 10px;*/
 }
 #info:empty {
     border: transparent;
+}
+#domainSelection {
+    width: 150px;
+    margin-left: 15px;
+    color: #fff;
+    background-color: #0062cc;
+    border-color: #005cbf;
+}
+#domainSelection-toggle: focus {
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+#label {
+    color: #2c5c91;
+    font-weight: bold;
+    float: left;
 }
