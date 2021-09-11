@@ -1,24 +1,88 @@
-<?php require ('network_data.php');  ?>
 <?php error_reporting(-1);
 header('Content-Type: text/html; charset=utf-8');
 ?>
+<?php require ('network_data.php');  ?>
+
 <title><?php echo 'Визуализация топологии сетей'; ?></title>
 <script src="assets/js/highcharts.src.js"></script>
 <script src="assets/js/networkgraph.js"></script>
 <script src="assets/js/exporting.js"></script>
 <script src="assets/js/jquery.min.js"></script>
-<link rel="stylesheet" href="assets/css/style.css">
-<div style="width: 70%; float: left">
-    <div id="container"></div>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/bootbox.min.js"></script>
+<link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+
+<div id="container">
+    <div id="domain">Domain-1</div>
+
 </div>
-<div >
-    <div id="info"></div>
-</div>
+<div id="label"></div>
+<div id="info"></div>
+
 
 <script>
-    var json = <?php echo $json_response; ?>,
-        data = [];
-    console.log(data)
+    document.getElementById("domain").innerHTML = localStorage.getItem('todoData')
+
+    //Выбор элементов по имени домена
+    function getDomain(array, type, val) {
+        return array.filter(function (el) {
+            return el[type] === val;
+        })
+    }
+    var domains = <?php echo $domain; ?>,
+        domain = [];
+
+</script>
+<div id="label">Выбор домена
+<script>
+    var selectDomain = document.createElement("SELECT");
+    //selectDomain.setAttribute("id", "domainSelection");
+    document.body.appendChild(selectDomain);
+    selectDomain.id = "domainSelection";
+    domains.forEach(function (item, index, array) {
+        var opt = document.createElement("option")
+        opt.text = item.domain_name
+        opt.value = item.domain_name
+        selectDomain.add(opt)
+        document.getElementById("domainSelection").value = "Выберите домен";
+    })
+
+</script>
+</div>
+<script>
+
+    $(function () {
+        $('#domainSelection').change(function () {
+            localStorage.setItem('todoData', this.value);
+            location.reload()//перезагрузка страницы после выбора домена
+        });
+        if (localStorage.getItem('todoData')) {
+            $('#domainSelection').val(localStorage.getItem('todoData'));
+        }
+    });
+
+    var jsonn = <?php echo $json_response; ?>,
+        dataa = [];
+
+    var json = getDomain(jsonn, 'domain_name', document.getElementById("domain").innerHTML),
+        data = []
+
+    document.getElementById("domainSelection").onchange = function () {changeFunction()};
+    function changeFunction() {
+        var select = document.getElementById("domainSelection");
+        document.getElementById("domain").innerHTML = select.value;
+    }
+
+
+    var json3 = getDomain(json, 'domain_name', document.getElementById("domain").innerHTML),
+        data_filtered = [];
+
+    var filtered = data.filter(
+        function (e) {
+            return this.indexOf(e) == 'Domain-1';
+        }, data)
+
 
     json.forEach(function(point) {
         //console.log(point.net_architect)
@@ -63,17 +127,6 @@ header('Content-Type: text/html; charset=utf-8');
             },
             tooltip: {
                 enabled: false,
-                formatter: function () {
-                    if ((pcid_count = data.length) > 0) {
-                        for (i = 0; i < pcid_count; i++) {
-                            return '<br/><b>ID: </b>' + this.point.name + '<br/><b>Архитектура: </b>' + data[0].net_architect + '<br/><b>ОС: </b>' + point.os_version +
-                                '<br/><b>PC-роль: </b>' + this.point.pc_role + '<br/><b>User_Name: </b>' + point.user_name + '<br/><b>PC_Name: </b>' + point.pc_name +
-                                '<br/><b>ОЗУ: </b>' + data[0].ram + '<br/><b>Процессор: </b>' + point.proc + '<br/><b>Язык ОС: </b>' + point.os_language +
-                                '<br/><b>Запущенные процессы: </b>' + point.proccesses_list + '<br/><b>Запущенные службы: </b>' + point.servicies_list +
-                                '<br/><b>Диски: </b>' + point.disks + '<br/><b>Топология сети: </b>' + point.net_topology + '<br/><b>Список бинарных файлов: </b>' + point.bin_list;
-                        }
-                    }
-                }
             },
 
             plotOptions: {
@@ -88,18 +141,23 @@ header('Content-Type: text/html; charset=utf-8');
                             click: function() {
                                 for (i = 0; i < json.length; i += 1) {
                                     if (json[i].pcid === this.name) {
-                                        let info =  ("ID: " + this.name + "\n" + " ОЗУ: " + json[i].ram + "\n" + "Архитектура: " + json[i].net_architect
-                                            + "\n" +"ОС: " + json[i].os_version + "\n" + "PC-роль: " + json[i].pc_role + "\n" + "User_Name: " + json[i].user_name
-                                            + "\n" + "PC_Name: " + json[i].pc_name + "\n" + "ОЗУ: " + json[i].ram + "\n" + "Процессор: " + json[i].proc
-                                            + "\n" + "Язык ОС: " + json[i].os_language + "\n" + "Запущенные процессы: " + json[i].proccesses_list
-                                            + "\n" + "Запущенные службы: " + json[i].servicies_list + "\n" + "Диски: " + json[i].disks + "\n" + "Топология сети: "
-                                            + json[i].net_topology + "\n" + "Список бинарных файлов: " + json[i].bin_list);
-                                        let log = document.getElementById('info');
-                                        if (typeof log.innerText !== 'undefined') {
-                                            log.innerText = info;
-                                        } else {
-                                            log.textContent = info;
-                                        }
+                                        let info =  ("<b>"+"ID: "+"</b>" + this.name + "<br>" + "<b>"+" ОЗУ: "+"</b>" + json[i].ram + "<br>" + "<b>"+"Архитектура: "+"</b>" + json[i].net_architect
+                                            + "<br>" + "<b>"+"ОС: "+"</b>" + json[i].os_version + "<br>" + "<b>"+"PC-роль: "+"</b>" + json[i].pc_role + "<br>" + "<b>"+"User_Name: "+"</b>" + json[i].user_name
+                                            + "<br>" + "<b>"+"PC_Name: "+"</b>" + json[i].pc_name + "<br>" + "<b>"+"ОЗУ: "+"</b>" + json[i].ram + "<br>" + "<b>"+"Процессор: "+"</b>" + json[i].proc
+                                            + "<br>" + "<b>"+"Язык ОС: "+"</b>" + json[i].os_language + "<br>" + "<b>"+"Диски: "+"</b>" + json[i].disks + "<br>" + "<b>"+"Топология сети: "+"</b>" + json[i].net_topology + "\n" + "<br>" + "<b>"+"Список бинарных файлов: "+"</b>" + json[i].bin_list + '<div class="accordion" id="accordionExample">'+ '<div class="card">' + '<div class="card-header" id="headingOne">'
+                                            + '<h2 class="mb-0">'+ '<button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">'+"<b>"+ "Запущенные процессы: "+"</b>"+"</button>"+"</h2>" + "</div>"+'<div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">'
+                                            +'<div class="card-body">' + json[i].proccesses_list + "</div>"+"</div>" + "</div>" + '<div class="card">' + '<div class="card-header" id="headingThree">'+ '<h2 class="mb-0">'
+                                            +'<button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">'
+                                            +"<b>"+"Запущенные службы: " + "</b>" + "</button>"+"</h2>"+"</div>"+'<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">'
+                                            +'<div class="card-body">'+ json[i].servicies_list + "</div>"+"</div>"+ "</div>"+"</div>");
+
+                                        console.log(json[i].pcid + " : " + this.name)
+
+
+                                        bootbox.alert(info, function() {
+                                            closeButton: false;
+                                        });
+
                                     }
                                 }
                             }
@@ -131,7 +189,6 @@ header('Content-Type: text/html; charset=utf-8');
 
                 data: data
             }]
-
         });
     });
 </script>
